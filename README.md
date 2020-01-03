@@ -5,6 +5,11 @@ Module to configure, send and receive Exchange emails
 
 ![alt text](https://raw.githubusercontent.com/rocketbot-cl/Exchange/master/example/exchange.png)
 
+<strong>Video Example:</strong>
+
+[![Exchange](https://img.youtube.com/vi/mgpiej1NBbs/0.jpg)](https://www.youtube.com/watch?v=mgpiej1NBbs "Exchange")
+
+
 <h2>Dependencies</h2>
 
 <ul>
