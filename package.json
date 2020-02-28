@@ -172,7 +172,16 @@
                             "cn": "Body:"
                         },
                         "id": "body",
-                        "css": "col-md-6"
+                        "css": "col-md-9"
+                    },
+                    {
+                        "type": "checkbox",
+                        "title": {
+                            "es": "HTML",
+                            "en": "HTML"
+                        },
+                        "id": "isHtml",
+                        "css": "col-md-3"
                     },
                     {
                         "type": "file_select",
@@ -187,7 +196,7 @@
                             "cn": "Attached File:"
                         },
                         "id": "attached_file",
-                        "css": "col-md-6"
+                        "css": "col-md-12"
                     }
                 ]
             },

@@ -27,7 +27,7 @@ try:
 
     import shelve
     import os
-    from exchangelib import Account, Credentials, DELEGATE, Configuration, NTLM, BASIC, ServiceAccount
+    from exchangelib import Account, Credentials, DELEGATE, Configuration, NTLM, BASIC, ServiceAccount, HTMLBody
     from exchangelib.folders import Message, Mailbox
     from exchangelib import FileAttachment
 
@@ -77,12 +77,16 @@ try:
         to = GetParams('to')
         subject = GetParams('subject')
         body = GetParams('body')
+        is_html = GetParams('isHtml')
         attached_file = GetParams('attached_file')
 
         config = Configuration(
             server=server,
             credentials=cred
         )
+
+        if is_html:
+            body = HTMLBody(body)
 
         a = Account(primary_smtp_address=address, config=config,
                     access_type=DELEGATE, autodiscover=False)
