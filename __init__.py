@@ -27,7 +27,7 @@ try:
 
     import shelve
     import os
-    from exchangelib import Account, Credentials, DELEGATE, Configuration, NTLM, BASIC, ServiceAccount, HTMLBody
+    from exchangelib import Account, Credentials, DELEGATE, Configuration, NTLM, BASIC, ServiceAccount
     from exchangelib.folders import Message, Mailbox
     from exchangelib import FileAttachment
 
@@ -79,49 +79,99 @@ try:
         body = GetParams('body')
         attached_file = GetParams('attached_file')
 
-        try:
+        config = Configuration(
+            server=server,
+            credentials=cred
+        )
 
-            config = Configuration(
-                server=server,
-                credentials=cred
-            )
+        a = Account(primary_smtp_address=address, config=config,
+                    access_type=DELEGATE, autodiscover=False)
 
-            a = Account(primary_smtp_address=address, config=config,
-                        access_type=DELEGATE, autodiscover=False)
+        # print('TREE',a.root.tree())
 
-            print('TREE',a.root.tree())
+        # If you want a local copy
+        m = Message(
+            account=a,
+            folder=a.sent,
+            subject=subject,
+            body=body,
+            to_recipients=to.split(",")
+        )
 
-            # If you want a local copy
-            m = Message(
-                account=a,
-                folder=a.sent,
-                subject=subject,
-                body=HTMLBody(body),
-                to_recipients=[Mailbox(email_address=to)]
-            )
+        if attached_file is None or attached_file is "":
+            pass
+        else:
+            with open(attached_file, 'rb') as f:
+                content = f.read()  # Read the binary file contents
 
-            if attached_file:
-                with open(attached_file, 'rb') as f:
-                    content = f.read()  # Read the binary file contents
+                attached_name = os.path.basename(attached_file)
 
-                    attached_name = os.path.basename(attached_file)
+            att = FileAttachment(name=attached_name, content=content)
+            m.attach(att)
+        m.save()
 
-                att = FileAttachment(name=attached_name, content=content)
-                m.attach(att)
-            m.save()
-
-            m.send_and_save()
-        except Exception as e:
-            PrintException()
-            raise e
+        m.send_and_save()
 
     if module == "get_mail":
         a = Account(primary_smtp_address=address, config=config,
                     access_type=DELEGATE, autodiscover=False)
 
         var = GetParams('var')
-        unread = [m.id for m in a.inbox.all() if not m.is_read]
-        SetVar(var, unread)
+        tipo_filtro = GetParams('tipo_filtro')
+        filtro = GetParams('filtro')
+        id = []
+
+        if filtro:
+            if tipo_filtro == 'author':
+                #id = [m.id for m in a.inbox.all() if not m.is_read and filtro in m.author.email_address]
+
+                for m in a.inbox.all():
+                    if filtro in m.author.email_address:
+                        id.append(m.id)
+                        #print('FOR',m.id)
+
+            if tipo_filtro == 'subject':
+                #id = [m.id for m in a.inbox.all() if tmp in m.subject]
+
+                for m in a.inbox.all():
+                    if filtro in m.subject:
+                        id.append(m.id)
+                        #print('FOR',m.id)
+        else:
+            id = [m.id for m in a.inbox.all() if not m.is_read]
+
+        SetVar(var, id)
+
+    if module == "get_new_mail":
+        a = Account(primary_smtp_address=address, config=config,
+                    access_type=DELEGATE, autodiscover=False)
+
+        var = GetParams('var')
+        tipo_filtro = GetParams('tipo_filtro')
+        filtro = GetParams('filtro')
+        id = []
+
+        if filtro:
+            if tipo_filtro == 'author':
+                #id = [m.id for m in a.inbox.all() if not m.is_read and filtro in m.author.email_address]
+
+                for m in a.inbox.all():
+                    if not m.is_read and filtro in m.author.email_address:
+                        id.append(m.id)
+                        #print('FOR',m.id)
+
+            if tipo_filtro == 'subject':
+                #id = [m.id for m in a.inbox.all() if tmp in m.subject]
+
+                for m in a.inbox.all():
+                    if not m.is_read and filtro in m.subject:
+                        id.append(m.id)
+                        #print('FOR',m.id)
+
+        else:
+            id = [m.id for m in a.inbox.all() if not m.is_read]
+
+        SetVar(var, id)
 
     if module == "read_mail":
         path_ = GetParams('path')
@@ -156,13 +206,11 @@ try:
                 with open(fpath, 'wb') as f:
                     f.write(attachment.content)
 
-
     if module == "move_folder":
-
         a = Account(primary_smtp_address=address, config=config,
                     access_type=DELEGATE, autodiscover=False)
 
-        folder_name =  GetParams('folder_name')
+        folder_name = GetParams('folder_name')
         id_mail = GetParams('id_mail')
 
         to_folder = a.inbox / folder_name
