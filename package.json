@@ -136,10 +136,9 @@
             "form": {
                 "css": "modal-lg",
                 "inputs": [
-
                     {
                         "type": "input",
-                        "placeholder":"to@mail.com,user@test.com",
+                        "placeholder":"to@mail.com, to2@mail.com",
                         "title": {
                             "es": "Para:",
                             "en": "To:",
@@ -150,7 +149,22 @@
                             "en": "for multiple recipients, comma separated"
                         },
                         "id": "to",
-                        "css": "col-md-6"
+                        "css": "col-md-12"
+                    },
+                     {
+                        "type": "input",
+                        "placeholder":"cc@mail.com, cc2@mail.com",
+                        "title": {
+                            "es": "Copia:",
+                            "en": "Cc:",
+                            "cn": "Cc:"
+                        },
+                        "help": {
+                            "es": "para varios destinatarios separar por coma",
+                            "en": "for multiple recipients, comma separated"
+                        },
+                        "id": "cc",
+                        "css": "col-md-12"
                     },
                      {
                         "type": "input",
@@ -161,7 +175,7 @@
                             "cn": "Subject:"
                         },
                         "id": "subject",
-                        "css": "col-md-6"
+                        "css": "col-md-12"
                     },
                     {
                         "type": "input",
@@ -174,7 +188,7 @@
                         "id": "body",
                         "css": "col-md-9"
                     },
-                    {
+                     {
                         "type": "checkbox",
                         "title": {
                             "es": "HTML",
@@ -186,9 +200,9 @@
                     {
                         "type": "file_select",
                         "placeholder": {
-                            "es": "Ruta al Archivo",
-                            "en": "Path to File",
-                            "cn": "Path to File"
+                            "es": "C:\\User\\Desktop\\test.txt",
+                            "en": "C:\\User\\Desktop\\test.txt",
+                            "cn": "C:\\User\\Desktop\\test.txt"
                         },
                         "title": {
                             "es": "Archivo Adjunto:",
@@ -196,6 +210,24 @@
                             "cn": "Attached File:"
                         },
                         "id": "attached_file",
+                        "css": "col-md-12"
+                    },
+                    {
+                        "type": "folder_select",
+                        "placeholder": {
+                            "es": "C:\\User\\Desktop\\Files",
+                            "en": "C:\\User\\Desktop\\Files",
+                            "cn": "C:\\User\\Desktop\\Files"
+                        },
+                        "title": {
+                            "es": "Carpeta (Varios archivos):",
+                            "en": "Folder (Multiple files):"
+                        },
+                        "help": {
+                            "es": "Para varios adjuntos, ingresar ruta a carpeta",
+                            "en": "For several attachments, enter folder path"
+                        },
+                        "id": "attached_folder",
                         "css": "col-md-12"
                     }
                 ]

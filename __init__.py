@@ -78,7 +78,9 @@ try:
         subject = GetParams('subject')
         body = GetParams('body')
         is_html = GetParams('isHtml')
+        cc = GetParams("cc")
         attached_file = GetParams('attached_file')
+        attached_folder = GetParams("attached_folder")
 
         config = Configuration(
             server=server,
@@ -99,19 +101,26 @@ try:
             folder=a.sent,
             subject=subject,
             body=body,
-            to_recipients=to.split(",")
+            to_recipients=to.split(","),
+            cc_recipients = cc.split(",") if cc else None
         )
+        att = []
+        file_names = []
+        if attached_file: file_names.append(attached_file)
+        if attached_folder:
+            for f in os.listdir(attached_folder):
+                f = os.path.join(attached_folder, f)
+                file_names.append(f)
 
-        if attached_file is None or attached_file is "":
-            pass
-        else:
-            with open(attached_file, 'rb') as f:
+        for file in file_names:
+
+            with open(file, 'rb') as f:
                 content = f.read()  # Read the binary file contents
+                attached_name = os.path.basename(file)
 
-                attached_name = os.path.basename(attached_file)
+            att.append(FileAttachment(name=attached_name, content=content))
 
-            att = FileAttachment(name=attached_name, content=content)
-            m.attach(att)
+        if len(att) > 0: m.attach(att)
         m.save()
 
         m.send_and_save()
