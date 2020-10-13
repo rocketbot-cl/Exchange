@@ -1,6 +1,19 @@
 # Exchange
 Module to configure, send and receive Exchange emails
 
+## Commands
+
+<ul id="commands_readme">
+    <li>Email Configuration</li>
+    <li>Send Email</li>
+    <li>Get all emails</li>
+    <li>Get new email</li>
+    <li>Read email for ID</li>
+    <li>Move email to folder</li>
+    <li>Reply email for ID</li>
+    <li>Forward email for ID</li>
+</ul>
+
 **In the example robot you must change the configuration data for yours.
 
 ![alt text](https://raw.githubusercontent.com/rocketbot-cl/Exchange/master/example/exchange.png)

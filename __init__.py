@@ -27,7 +27,7 @@ try:
 
     import shelve
     import os
-    from exchangelib import Account, Credentials, DELEGATE, Configuration, NTLM, BASIC, ServiceAccount, HTMLBody
+    from exchangelib import Account, DELEGATE, NTLM, BASIC, ServiceAccount, HTMLBody
     from exchangelib.folders import Message, Mailbox
     from exchangelib import FileAttachment
 
@@ -40,34 +40,41 @@ try:
         Obtengo el modulo que fue invocado
     """
     module = GetParams("module")
-    global server
-    global cred
-    global address
-    global config
+
+    global exchange_module
     global a
+
+
+    class ExchangeModule:
+        def __init__(self, user_, pwd, server_, mail_):
+            self.pwd = pwd
+            self.mail = mail_
+            self.server = server_
+            self.user = user_
+            self.credentials = None
+            self.config = None
+
+        def init(self):
+            from exchangelib import Credentials, Configuration
+            self.credentials = Credentials(username=self.user, password=self.pwd)
+            self.config = Configuration(server=self.server, credentials=self.credentials)
+            return self.config
+
 
     """
         Obtengo variables
     """
     if module == "exchange":
-        global server
-        global cred
-        global address
-        global config
-
         user = GetParams('user')
         password = GetParams('pass')
         server = GetParams('server')
         address = GetParams('address')
         print('USUARIO', user)
 
-        cred = Credentials(username=user, password=password)
-        config = Configuration(
-            server=server,
-            credentials=cred
-        )
-
-        print(config)
+        exchange_module = ExchangeModule(user, password, server, address)
+        print(exchange_module)
+        config = exchange_module.init()
+        # print(config)
 
         """
             Obtengo la ruta con y sin extensión
@@ -82,10 +89,11 @@ try:
         attached_file = GetParams('attached_file')
         attached_folder = GetParams("attached_folder")
 
-        config = Configuration(
-            server=server,
-            credentials=cred
-        )
+        if exchange_module.config is not None:
+            config = exchange_module.config
+        else:
+            raise Exception("Execute Email Configuration command")
+        address = exchange_module.mail
 
         if is_html:
             body = HTMLBody(body)
@@ -102,7 +110,7 @@ try:
             subject=subject,
             body=body,
             to_recipients=to.split(","),
-            cc_recipients = cc.split(",") if cc else None
+            cc_recipients=cc.split(",") if cc else None
         )
         att = []
         file_names = []
@@ -113,7 +121,6 @@ try:
                 file_names.append(f)
 
         for file in file_names:
-
             with open(file, 'rb') as f:
                 content = f.read()  # Read the binary file contents
                 attached_name = os.path.basename(file)
@@ -126,6 +133,12 @@ try:
         m.send_and_save()
 
     if module == "get_mail":
+
+        if exchange_module.config is not None:
+            config = exchange_module.config
+        else:
+            raise Exception("Execute Email Configuration command")
+        address = exchange_module.mail
         a = Account(primary_smtp_address=address, config=config,
                     access_type=DELEGATE, autodiscover=False)
 
@@ -136,26 +149,32 @@ try:
 
         if filtro:
             if tipo_filtro == 'author':
-                #id = [m.id for m in a.inbox.all() if not m.is_read and filtro in m.author.email_address]
+                # id = [m.id for m in a.inbox.all() if not m.is_read and filtro in m.author.email_address]
 
                 for m in a.inbox.all():
                     if filtro in m.author.email_address:
                         id.append(m.id)
-                        #print('FOR',m.id)
+                        # print('FOR',m.id)
 
             if tipo_filtro == 'subject':
-                #id = [m.id for m in a.inbox.all() if tmp in m.subject]
+                # id = [m.id for m in a.inbox.all() if tmp in m.subject]
 
                 for m in a.inbox.all():
                     if filtro in m.subject:
                         id.append(m.id)
-                        #print('FOR',m.id)
+                        # print('FOR',m.id)
         else:
             id = [m.id for m in a.inbox.all() if not m.is_read]
 
         SetVar(var, id)
 
     if module == "get_new_mail":
+
+        if exchange_module.config is not None:
+            config = exchange_module.config
+        else:
+            raise Exception("Execute Email Configuration command")
+        address = exchange_module.mail
         a = Account(primary_smtp_address=address, config=config,
                     access_type=DELEGATE, autodiscover=False)
 
@@ -166,20 +185,20 @@ try:
 
         if filtro:
             if tipo_filtro == 'author':
-                #id = [m.id for m in a.inbox.all() if not m.is_read and filtro in m.author.email_address]
+                # id = [m.id for m in a.inbox.all() if not m.is_read and filtro in m.author.email_address]
 
                 for m in a.inbox.all():
                     if not m.is_read and filtro in m.author.email_address:
                         id.append(m.id)
-                        #print('FOR',m.id)
+                        # print('FOR',m.id)
 
             if tipo_filtro == 'subject':
-                #id = [m.id for m in a.inbox.all() if tmp in m.subject]
+                # id = [m.id for m in a.inbox.all() if tmp in m.subject]
 
                 for m in a.inbox.all():
                     if not m.is_read and filtro in m.subject:
                         id.append(m.id)
-                        #print('FOR',m.id)
+                        # print('FOR',m.id)
 
         else:
             id = [m.id for m in a.inbox.all() if not m.is_read]
@@ -194,6 +213,12 @@ try:
             if not os.path.exists(path_):
                 raise Exception('La carpeta no existe')
 
+        if exchange_module.config is not None:
+            config = exchange_module.config
+        else:
+            raise Exception("Execute Email Configuration command")
+        address = exchange_module.mail
+
         a = Account(primary_smtp_address=address, config=config,
                     access_type=DELEGATE, autodiscover=False)
 
@@ -201,7 +226,6 @@ try:
         var = GetParams('var')
 
         mail = a.inbox.get(id=id_mail)
-
         datos_mail = mail.subject, mail.author.email_address, mail.body, mail.attachments
         cont = BeautifulSoup(mail.body, "html")
         final = {'subject': mail.subject, 'from': mail.author.email_address, 'body': cont.text.strip(),
@@ -220,6 +244,12 @@ try:
                     f.write(attachment.content)
 
     if module == "move_folder":
+        if exchange_module.config is not None:
+            config = exchange_module.config
+        else:
+            raise Exception("Execute Email Configuration command")
+
+        address = exchange_module.mail
         a = Account(primary_smtp_address=address, config=config,
                     access_type=DELEGATE, autodiscover=False)
 
@@ -232,7 +262,110 @@ try:
 
         mail.move(to_folder)
 
+    if module == "reply_email":
+        # Get Params from Rocketbot
+        id_mail = GetParams('id_')
+        body_ = GetParams('body')
+        attached_file = GetParams('attached_file')
+        attached_folder = GetParams('attached_folder')
+
+        # Validation of configuration
+        if exchange_module.config is not None:
+            config = exchange_module.config
+        else:
+            raise Exception("Execute Email Configuration command")
+
+        address = exchange_module.mail
+
+        # Get Account
+        a = Account(primary_smtp_address=address, config=config,
+                    access_type=DELEGATE, autodiscover=False)
+
+        # Get Mail
+        mail = a.inbox.get(id=id_mail)
+
+        # Create Draft to reply
+        m = mail.create_reply(
+            subject=mail.subject,
+            body=body_,
+            to_recipients=[mail.sender],
+            cc_recipients=mail.cc_recipients,
+        )
+
+        # Attachment
+        att = []
+        file_names = []
+        if attached_file:
+            file_names.append(attached_file)
+        if attached_folder:
+            for f in os.listdir(attached_folder):
+                f = os.path.join(attached_folder, f)
+                file_names.append(f)
+
+        for file in file_names:
+            with open(file, 'rb') as f:
+                content = f.read()  # Read the binary file contents
+                attached_name = os.path.basename(file)
+
+            att.append(FileAttachment(name=attached_name, content=content))
+
+        if len(att) > 0:
+            m.attach(att)
+        # m.save()
+        m.send()
+
+    if module == "forward":
+        id_ = GetParams('id_')
+        to_ = GetParams('email')
+        attached_file = GetParams('attached_file')
+
+        # Validation of configuration
+        if exchange_module.config is not None:
+            config = exchange_module.config
+        else:
+            raise Exception("Execute Email Configuration command")
+
+        address = exchange_module.mail
+
+        # Get Account
+        a = Account(primary_smtp_address=address, config=config,
+                    access_type=DELEGATE, autodiscover=False)
+
+        # Get Mail
+        mail = a.inbox.get(id=id_)
+
+        # Create Draft to reply
+        m = mail.create_forward(
+            subject="Forward: " + mail.subject,
+            body="",
+            to_recipients=to_.split(";"),
+            cc_recipients=mail.cc_recipients,
+        )
+
+        # Attachment
+        att = []
+        file_names = []
+        if attached_file:
+            file_names.append(attached_file)
+        # if attached_folder:
+        #     for f in os.listdir(attached_folder):
+        #         f = os.path.join(attached_folder, f)
+        #         file_names.append(f)
+
+        for file in file_names:
+            with open(file, 'rb') as f:
+                content = f.read()  # Read the binary file contents
+                attached_name = os.path.basename(file)
+
+            att.append(FileAttachment(name=attached_name, content=content))
+
+        if len(att) > 0:
+            m.attach(att)
+        # m.save()
+        m.send()
+
+
 except Exception as e:
+    print("\x1B[" + "31;40mAn error occurred\u2193\x1B[" + "0m")
     PrintException()
-    print(e)
     raise e
