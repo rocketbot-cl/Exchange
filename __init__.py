@@ -72,13 +72,8 @@ try:
         print('USUARIO', user)
 
         exchange_module = ExchangeModule(user, password, server, address)
-        print(exchange_module)
         config = exchange_module.init()
         # print(config)
-
-        """
-            Obtengo la ruta con y sin extensión
-        """
 
     if module == "send_mail":
         to = GetParams('to')
@@ -145,15 +140,16 @@ try:
         var = GetParams('var')
         tipo_filtro = GetParams('tipo_filtro')
         filtro = GetParams('filtro')
-        id = []
+        id_ = []
 
-        if filtro:
+        if bool(filtro):
+            print("Searching with filter")
             if tipo_filtro == 'author':
                 # id = [m.id for m in a.inbox.all() if not m.is_read and filtro in m.author.email_address]
 
                 for m in a.inbox.all():
                     if filtro in m.author.email_address:
-                        id.append(m.id)
+                        id_.append(m.id)
                         # print('FOR',m.id)
 
             if tipo_filtro == 'subject':
@@ -161,12 +157,13 @@ try:
 
                 for m in a.inbox.all():
                     if filtro in m.subject:
-                        id.append(m.id)
+                        id_.append(m.id)
                         # print('FOR',m.id)
         else:
-            id = [m.id for m in a.inbox.all() if not m.is_read]
+            print("Searching without filter")
+            id_ = [m.id for m in a.inbox.all()]
 
-        SetVar(var, id)
+        SetVar(var, id_)
 
     if module == "get_new_mail":
 
@@ -181,7 +178,7 @@ try:
         var = GetParams('var')
         tipo_filtro = GetParams('tipo_filtro')
         filtro = GetParams('filtro')
-        id = []
+        id_ = []
 
         if filtro:
             if tipo_filtro == 'author':
@@ -189,7 +186,7 @@ try:
 
                 for m in a.inbox.all():
                     if not m.is_read and filtro in m.author.email_address:
-                        id.append(m.id)
+                        id_.append(m.id)
                         # print('FOR',m.id)
 
             if tipo_filtro == 'subject':
@@ -197,13 +194,13 @@ try:
 
                 for m in a.inbox.all():
                     if not m.is_read and filtro in m.subject:
-                        id.append(m.id)
+                        id_.append(m.id)
                         # print('FOR',m.id)
 
         else:
-            id = [m.id for m in a.inbox.all() if not m.is_read]
+            id_ = [m.id for m in a.inbox.all() if not m.is_read]
 
-        SetVar(var, id)
+        SetVar(var, id_)
 
     if module == "read_mail":
         path_ = GetParams('path')
