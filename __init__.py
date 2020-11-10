@@ -192,8 +192,8 @@ try:
             if tipo_filtro == 'subject':
                 # id = [m.id for m in a.inbox.all() if tmp in m.subject]
 
-                for m in a.inbox.all():
-                    if not m.is_read and filtro in m.subject:
+                for m in a.inbox.filter(subject=filtro):
+                    if not m.is_read:
                         id_.append(m.id)
                         # print('FOR',m.id)
 
@@ -228,6 +228,8 @@ try:
         final = {'subject': mail.subject, 'from': mail.author.email_address, 'body': cont.text.strip(),
                  'files': [m.name for m in mail.attachments]}
         print(final)
+        mail.is_read = True
+        mail.save()
 
         SetVar(var, final)
 
