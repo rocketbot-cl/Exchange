@@ -267,6 +267,7 @@ try:
         body_ = GetParams('body')
         attached_file = GetParams('attached_file')
         attached_folder = GetParams('attached_folder')
+        reply_all = GetParams("all")
 
         # Validation of configuration
         if exchange_module.config is not None:
@@ -283,12 +284,19 @@ try:
         # Get Mail
         mail = a.inbox.get(id=id_mail)
 
+        if reply_all:
+            to_recipients = mail.to_recipients + [mail.sender]
+            cc_recipients = mail.cc_recipients
+        else:
+            to_recipients = [mail.sender]
+            cc_recipients = []
+
         # Create Draft to reply
         m = mail.create_reply(
             subject=mail.subject,
             body=body_,
-            to_recipients=[mail.sender],
-            cc_recipients=mail.cc_recipients,
+            to_recipients=to_recipients,
+            cc_recipients=cc_recipients
         )
 
         # Attachment
