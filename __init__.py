@@ -191,8 +191,10 @@ try:
 
             if tipo_filtro == 'subject':
                 # id = [m.id for m in a.inbox.all() if tmp in m.subject]
-
-                for m in a.inbox.filter(subject=filtro):
+                print("subject:" + filtro)
+                mails_filters = a.inbox.filter(subject__contains=filtro)
+                for m in mails_filters:
+                    print(m.subject)
                     if not m.is_read:
                         id_.append(m.id)
                         # print('FOR',m.id)
@@ -373,6 +375,5 @@ try:
 
 
 except Exception as e:
-    print("\x1B[" + "31;40mAn error occurred\u2193\x1B[" + "0m")
     PrintException()
     raise e
