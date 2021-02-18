@@ -27,9 +27,17 @@ try:
 
     import shelve
     import os
-    from exchangelib import Account, DELEGATE, NTLM, BASIC, ServiceAccount, HTMLBody
-    from exchangelib.folders import Message, Mailbox
-    from exchangelib import FileAttachment
+    try:
+        from exchangelib import Account, DELEGATE, HTMLBody
+        from exchangelib.folders import Message, Mailbox
+        from exchangelib import FileAttachment
+    except ImportError:
+        print("New libs")
+        from exchangelib.account import Account
+        from exchangelib.credentials import DELEGATE
+        from exchangelib.items import Message
+        from exchangelib.properties import Mailbox, HTMLBody
+
 
     from exchangelib.protocol import BaseProtocol, NoVerifyHTTPAdapter
 
@@ -55,7 +63,11 @@ try:
             self.config = None
 
         def init(self):
-            from exchangelib import Credentials, Configuration
+            try:
+                from exchangelib import Credentials, Configuration
+            except ImportError:
+                from exchangelib.credentials import Credentials
+                from exchangelib.configuration import Configuration
             self.credentials = Credentials(username=self.user, password=self.pwd)
             self.config = Configuration(server=self.server, credentials=self.credentials)
             return self.config
@@ -146,22 +158,17 @@ try:
             print("Searching with filter")
             if tipo_filtro == 'author':
                 # id = [m.id for m in a.inbox.all() if not m.is_read and filtro in m.author.email_address]
-
-                for m in a.inbox.all():
-                    if filtro in m.author.email_address:
-                        id_.append(m.id)
-                        # print('FOR',m.id)
+                for m in a.inbox.filter(author__contains=filtro):
+                    id_.append(m.id)
 
             if tipo_filtro == 'subject':
                 # id = [m.id for m in a.inbox.all() if tmp in m.subject]
-
-                for m in a.inbox.all():
-                    if filtro in m.subject:
-                        id_.append(m.id)
-                        # print('FOR',m.id)
+                mails_filters = a.inbox.filter(subject__contains=filtro).only("id")
+                for m in mails_filters:
+                    id_.append(m.id)
         else:
             print("Searching without filter")
-            id_ = [m.id for m in a.inbox.all()]
+            id_ = [m.id for m in a.inbox.all().only("id")]
 
         SetVar(var, id_)
 
@@ -179,28 +186,22 @@ try:
         tipo_filtro = GetParams('tipo_filtro')
         filtro = GetParams('filtro')
         id_ = []
-
+        print(filtro)
         if filtro:
             if tipo_filtro == 'author':
                 # id = [m.id for m in a.inbox.all() if not m.is_read and filtro in m.author.email_address]
 
-                for m in a.inbox.all():
-                    if not m.is_read and filtro in m.author.email_address:
-                        id_.append(m.id)
-                        # print('FOR',m.id)
+                for m in a.inbox.filter(is_read=False, author__contains=filtro):
+                    id_.append(m.id)
 
             if tipo_filtro == 'subject':
-                # id = [m.id for m in a.inbox.all() if tmp in m.subject]
-                print("subject:" + filtro)
-                mails_filters = a.inbox.filter(subject__contains=filtro)
+                mails_filters = a.inbox.filter(subject__contains=filtro, is_read=False).only("id")
                 for m in mails_filters:
-                    print(m.subject)
-                    if not m.is_read:
-                        id_.append(m.id)
+                    id_.append(m.id)
                         # print('FOR',m.id)
 
         else:
-            id_ = [m.id for m in a.inbox.all() if not m.is_read]
+            id_ = [m.id for m in a.inbox.filter(is_read=False).only("id")]
 
         SetVar(var, id_)
 
