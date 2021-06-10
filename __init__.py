@@ -158,7 +158,7 @@ try:
             print("Searching with filter")
             if tipo_filtro == 'author':
                 # id = [m.id for m in a.inbox.all() if not m.is_read and filtro in m.author.email_address]
-                for m in a.inbox.filter(author__contains=filtro):
+                for m in a.inbox.filter(sender=filtro):
                     id_.append(m.id)
 
             if tipo_filtro == 'subject':
