@@ -226,20 +226,16 @@ try:
         var = GetParams('var')
 
         mail = a.inbox.get(id=id_mail)
-        datos_mail = mail.subject, mail.author.email_address, mail.body, mail.attachments
         cont = BeautifulSoup(mail.body, "html")
-        final = {'subject': mail.subject, 'from': mail.author.email_address, 'body': cont.text.strip(),
+        from datetime import datetime, timedelta
+        date_ = mail.datetime_received - timedelta(hours=4)
+        date_str = date_.strftime("%Y-%m-%d %H:%M:%S")
+        final = {'datetime_received': date_str, 'subject': mail.subject, 'from': mail.author.email_address, 'body': cont.text.strip(),
                  'files': [m.name for m in mail.attachments]}
-        print(final)
         mail.is_read = True
         mail.save()
-
         SetVar(var, final)
-
-        # DESCARGA ARCHIVO ADJUNTO
-
         if path_:
-
             for attachment in mail.attachments:
                 fpath = os.path.join(path_, attachment.name)
                 with open(fpath, 'wb') as f:
