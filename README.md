@@ -22,6 +22,9 @@ Module to configure, send and receive Exchange emails
 
 [![Exchange](https://img.youtube.com/vi/mgpiej1NBbs/0.jpg)](https://www.youtube.com/watch?v=mgpiej1NBbs "Exchange")
 
+### Updates
+## 02-Sep-2021
+- Add field date in read mail.
 
 <h2>Dependencies</h2>
 
